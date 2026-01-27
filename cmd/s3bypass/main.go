@@ -8,11 +8,10 @@ import (
 	"s3bypass/pkg/scanner"
 	"s3bypass/pkg/utils"
 	"time"
+	"log/slog"
 )
 
-	"log/slog"
-	
-	func main() {
+func main() {
 	// 1. Load Configuration
 	cfg, err := config.Load()
 	if err != nil {
