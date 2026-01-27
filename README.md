@@ -15,6 +15,9 @@ Built with Go for speed and reliability, it uses a worker-pool architecture to e
     *   Secrets (`.env`, `credentials`, `id_rsa`)
     *   Backups (`.sql`, `.tar.gz`, `.bak`)
     *   Configs (`config.php`, `settings.py`, `terraform.tfstate`)
+*   **🛡️ WAF Evasion**:
+    *   **Rate Limiting**: Configurable delay with automatic jitter to mimic human behavior.
+    *   **Random User-Agents**: Rotates modern browser signatures for every request.
 *   **Resource Efficient**: Streamed file reading to handle massive input lists without memory bloat.
 *   **Modular Architecture**: Clean, maintainable Go codebase.
 
@@ -43,6 +46,13 @@ Quickly check a single bucket.
 
 ```bash
 ./s3bypass -u http://target-bucket.s3.amazonaws.com/
+```
+
+### WAF Evasion Mode
+Scan with 500ms delay (plus random jitter) to avoid rate limits.
+
+```bash
+./s3bypass -l targets.txt -delay 500 -t 20
 ```
 
 ### Advanced Options
