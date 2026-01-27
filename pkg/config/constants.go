@@ -16,4 +16,8 @@ const (
 	ChannelBufferMulti    = 10
 	UserAgent             = "S3Hunter/2.0"
 	S3UrlRegex            = `http[s]?://([a-zA-Z0-9.-]+)\.s3\.amazonaws\.com`
+	
+	// WAF Evasion Constants
+	JitterPercentage = 0.1
+	JitterMultiplier = 2
 )

@@ -28,8 +28,8 @@ func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 		// Rate Limiting / Delay
 		if s.cfg.Delay > 0 {
 			// Add jitter (+/- 10%)
-			jitter := int(float64(s.cfg.Delay) * 0.1)
-			actualDelay := s.cfg.Delay + rand.Intn(jitter*2+1) - jitter
+			jitter := int(float64(s.cfg.Delay) * config.JitterPercentage)
+			actualDelay := s.cfg.Delay + rand.Intn(jitter*config.JitterMultiplier+1) - jitter
 			if actualDelay < 0 {
 				actualDelay = 0
 			}
