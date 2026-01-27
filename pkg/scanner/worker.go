@@ -55,6 +55,9 @@ func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 					URL:  url,
 					Size: resp.ContentLength,
 				}
+			} else {
+				// Log non-200 responses in debug mode
+				slog.Debug("Scan result", "url", url, "status", resp.StatusCode)
 			}
 			resp.Body.Close()
 		} else {
