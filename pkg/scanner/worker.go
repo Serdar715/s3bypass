@@ -3,8 +3,10 @@ package scanner
 import (
 	"fmt"
 	"log/slog"
+	"math/rand"
 	"net/http"
-	"s3bypass/pkg/config"
+	"s3bypass/pkg/utils"
+	"time"
 )
 
 // Job represents a single scan task
@@ -23,6 +25,17 @@ type Result struct {
 // worker processes jobs from the channel
 func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 	for job := range jobs {
+		// Rate Limiting / Delay
+		if s.cfg.Delay > 0 {
+			// Add jitter (+/- 10%)
+			jitter := int(float64(s.cfg.Delay) * 0.1)
+			actualDelay := s.cfg.Delay + rand.Intn(jitter*2+1) - jitter
+			if actualDelay < 0 {
+				actualDelay = 0
+			}
+			time.Sleep(time.Duration(actualDelay) * time.Millisecond)
+		}
+
 		url := fmt.Sprintf("https://%s.s3.amazonaws.com/%s%s", job.Bucket, job.Prefix, job.Payload)
 		
 		req, err := http.NewRequest("HEAD", url, nil)
@@ -30,7 +43,9 @@ func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 			slog.Error("Failed to create request", "url", url, "error", err)
 			continue
 		}
-		req.Header.Set("User-Agent", config.UserAgent)
+		
+		// Random User-Agent
+		req.Header.Set("User-Agent", utils.GetRandomUserAgent())
 
 		resp, err := s.client.Do(req)
 		if err == nil {

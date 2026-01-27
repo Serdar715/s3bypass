@@ -13,6 +13,7 @@ type Config struct {
 	OutputFile  string
 	ThreadCount int
 	Timeout     int
+	Delay       int
 }
 
 // Load parses CLI flags and returns a Config struct
@@ -22,6 +23,7 @@ func Load() (*Config, error) {
 	output := flag.String("o", DefaultOutputFile, "Output file for found secrets")
 	threads := flag.Int("t", DefaultThreadCount, "Number of concurrent threads")
 	timeout := flag.Int("to", DefaultTimeoutSec, "Request timeout in seconds")
+	delay := flag.Int("delay", DefaultDelayMs, "Delay between requests in milliseconds")
 
 	flag.Parse()
 
@@ -31,6 +33,7 @@ func Load() (*Config, error) {
 		OutputFile:  *output,
 		ThreadCount: *threads,
 		Timeout:     *timeout,
+		Delay:       *delay,
 	}
 
 	if err := cfg.validate(); err != nil {

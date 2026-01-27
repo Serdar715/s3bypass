@@ -23,9 +23,10 @@ Built with Go for speed and reliability, it uses a worker-pool architecture to e
 Ensure you have [Go](https://go.dev/) installed.
 
 ```bash
-git clone https://github.com/Serdar715/s3bypass.git
+git clone https://github.com/Serdar715/s3bypass
 cd s3bypass
 go build -o s3bypass ./cmd/s3bypass
+sudo mv s3bypass /usr/local/bin/
 ```
 
 ## 🛠️ Usage

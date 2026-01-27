@@ -7,6 +7,8 @@ const (
 	DefaultThreadCount = 100
 	DefaultTimeoutSec  = 6
 	DefaultIdleTimeout = 30
+	DefaultDelayMs     = 0
+
 	
 	// Application Constants
 	ProtectedPrefix       = "Protected S3 Bucket: "
