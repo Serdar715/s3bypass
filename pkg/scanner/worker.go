@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
+	"os"
 	"s3bypass/pkg/config"
 	"s3bypass/pkg/utils"
 	"time"
@@ -45,19 +46,22 @@ func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 			continue
 		}
 		
-		// Random User-Agent
 		req.Header.Set("User-Agent", utils.GetRandomUserAgent())
 
 		resp, err := s.client.Do(req)
 		if err == nil {
+			// FFUF-style verbose output
+			if s.cfg.Verbose {
+				// Format: filename [Status: CODE, Size: SIZE, Words: 0, Lines: 0]   URL
+				fmt.Fprintf(os.Stderr, "%s [Status: %d, Size: %d, Words: 0, Lines: 0]   %s\n", 
+					job.Payload, resp.StatusCode, resp.ContentLength, url)
+			}
+
 			if resp.StatusCode == 200 {
 				results <- Result{
 					URL:  url,
 					Size: resp.ContentLength,
 				}
-			} else {
-				// Log non-200 responses in debug mode
-				slog.Debug("Scan result", "url", url, "status", resp.StatusCode)
 			}
 			resp.Body.Close()
 		} else {
@@ -97,4 +101,10 @@ var Payloads = []string{
 	"server.key", "api_keys.json", "customer_data.csv", "database.sqlite", 
 	"auth_token.txt", "client_secrets.json", "keystore.jks", "backup.rar", 
 	"shadow", "passwd", "id_dsa",
+	// Deep Research v3.0
+	"swagger.json", "swagger.yaml", "openapi.json", "graphql/schema.json",
+	"admin/config.php", "admin/.env", "backup/database.sql", "db/prod.sqlite",
+	"jenkins/secrets/master.key", "k8s/kubeconfig", "kubeconfig", ".kube/config",
+	"id_rsa_deploy", "deployment-key.json", "service-account-key.json",
+	"storage.json", "aws-creds.json", "s3-config.json",
 }

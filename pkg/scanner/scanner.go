@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"s3bypass/pkg/config"
+	"s3bypass/pkg/utils"
 	"sync"
 	"time"
 )
@@ -15,6 +16,7 @@ type Scanner struct {
 	cfg     *config.Config
 	client  *http.Client
 	buckets []string
+	payloads []string
 }
 
 // New creates a new Scanner instance
@@ -32,10 +34,25 @@ func New(cfg *config.Config, buckets []string) *Scanner {
 		Timeout:   time.Duration(cfg.Timeout) * time.Second,
 	}
 
+	// Load payloads
+	var scanPayloads []string
+	if cfg.Wordlist != "" {
+		lines, err := utils.ReadLines(cfg.Wordlist)
+		if err != nil {
+			fmt.Printf("⚠️ Failed to load wordlist: %v. Using default payloads.\n", err)
+			scanPayloads = Payloads
+		} else {
+			scanPayloads = lines
+		}
+	} else {
+		scanPayloads = Payloads
+	}
+
 	return &Scanner{
-		cfg:     cfg,
-		client:  client,
-		buckets: buckets,
+		cfg:      cfg,
+		client:   client,
+		buckets:  buckets,
+		payloads: scanPayloads,
 	}
 }
 
@@ -69,7 +86,7 @@ func (s *Scanner) Start() {
 func (s *Scanner) generateJobs(jobs chan<- Job) {
 	for _, bucket := range s.buckets {
 		for _, prefix := range Prefixes {
-			for _, payload := range Payloads {
+			for _, payload := range s.payloads {
 				jobs <- Job{
 					Bucket:  bucket,
 					Prefix:  prefix,

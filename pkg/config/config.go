@@ -15,6 +15,7 @@ type Config struct {
 	Timeout     int
 	Delay       int
 	Verbose     bool
+	Wordlist    string
 }
 
 // Load parses CLI flags and returns a Config struct
@@ -26,6 +27,7 @@ func Load() (*Config, error) {
 	timeout := flag.Int("to", DefaultTimeoutSec, "Request timeout in seconds")
 	delay := flag.Int("delay", DefaultDelayMs, "Delay between requests in milliseconds")
 	verbose := flag.Bool("v", false, "Enable verbose logging (debug mode)")
+	wordlist := flag.String("w", "", "Path to custom wordlist file (optional)")
 
 	flag.Parse()
 
@@ -37,6 +39,7 @@ func Load() (*Config, error) {
 		Timeout:     *timeout,
 		Delay:       *delay,
 		Verbose:     *verbose,
+		Wordlist:    *wordlist,
 	}
 
 	if err := cfg.validate(); err != nil {
