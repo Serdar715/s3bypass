@@ -1,0 +1,3 @@
+Protected S3 Bucket: http://flaws.cloud.s3.amazonaws.com/
+http://example-bucket.s3.amazonaws.com/
+production-backup
