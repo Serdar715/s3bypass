@@ -64,7 +64,11 @@ func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 }
 
 // Global lists moved here to avoid clutter in main
-var Prefixes = []string{"", "v1/", "v2/", "backup/", "config/", "staging/", "env/", "old/", "builds/", "test/", "deploy/", "aws/", "conf/", "db/", "tmp/"}
+var Prefixes = []string{
+	"", "v1/", "v2/", "backup/", "config/", "staging/", "env/", "old/", "builds/", "test/", "deploy/", "aws/", "conf/", "db/", "tmp/",
+	// Expanded v2.2
+	"exports/", "db_dumps/", "financial/", "private/", "ssl/", "keys/", "users/", "customers/", "secure/", "archive/", "logs/",
+}
 
 var Payloads = []string{
 	// Secrets
@@ -86,4 +90,8 @@ var Payloads = []string{
 	".travis.yml", ".gitlab-ci.yml", "jenkins.xml", "circle.yml",
 	// Logs
 	"phpinfo.php", "info.php", "debug.log", "error.log", "access.log",
+	// Expanded v2.2
+	"server.key", "api_keys.json", "customer_data.csv", "database.sqlite", 
+	"auth_token.txt", "client_secrets.json", "keystore.jks", "backup.rar", 
+	"shadow", "passwd", "id_dsa",
 }

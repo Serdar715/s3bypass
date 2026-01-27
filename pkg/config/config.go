@@ -14,6 +14,7 @@ type Config struct {
 	ThreadCount int
 	Timeout     int
 	Delay       int
+	Verbose     bool
 }
 
 // Load parses CLI flags and returns a Config struct
@@ -24,6 +25,7 @@ func Load() (*Config, error) {
 	threads := flag.Int("t", DefaultThreadCount, "Number of concurrent threads")
 	timeout := flag.Int("to", DefaultTimeoutSec, "Request timeout in seconds")
 	delay := flag.Int("delay", DefaultDelayMs, "Delay between requests in milliseconds")
+	verbose := flag.Bool("v", false, "Enable verbose logging (debug mode)")
 
 	flag.Parse()
 
@@ -34,6 +36,7 @@ func Load() (*Config, error) {
 		ThreadCount: *threads,
 		Timeout:     *timeout,
 		Delay:       *delay,
+		Verbose:     *verbose,
 	}
 
 	if err := cfg.validate(); err != nil {

@@ -10,13 +10,26 @@ import (
 	"time"
 )
 
-func main() {
+	"log/slog"
+	
+	func main() {
 	// 1. Load Configuration
 	cfg, err := config.Load()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
 		os.Exit(1)
 	}
+	
+	// Initialize Logger
+	logLevel := slog.LevelInfo
+	if cfg.Verbose {
+		logLevel = slog.LevelDebug
+	}
+	
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		Level: logLevel,
+	}))
+	slog.SetDefault(logger)
 
 	// 2. Read Inputs
 	var lines []string

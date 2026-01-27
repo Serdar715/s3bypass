@@ -4,7 +4,7 @@ const (
 	// Default Configuration Values
 	DefaultInputFile   = "protec.txt"
 	DefaultOutputFile  = "found_secrets.txt"
-	DefaultThreadCount = 100
+	DefaultThreadCount = 10
 	DefaultTimeoutSec  = 6
 	DefaultIdleTimeout = 30
 	DefaultDelayMs     = 0
