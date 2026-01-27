@@ -50,6 +50,36 @@ func (s *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 
 		resp, err := s.client.Do(req)
 		if err == nil {
+			// FILTER CHECK
+			if len(s.filterCodes) > 0 {
+				if _, ok := s.filterCodes[resp.StatusCode]; ok {
+					resp.Body.Close()
+					continue // Filtered by code
+				}
+			}
+			if len(s.filterSizes) > 0 {
+				if _, ok := s.filterSizes[int(resp.ContentLength)]; ok {
+					resp.Body.Close()
+					continue // Filtered by size
+				}
+			}
+			// Note: Words/Lines filtering requires body parsing (GET). 
+			// Since we use HEAD, these will be 0. 
+			// If user filters -fw 0, it effectively filters everything out unless we change logic.
+			// For now, we check against 0.
+			if len(s.filterWords) > 0 {
+				if _, ok := s.filterWords[0]; ok { // Words=0
+					resp.Body.Close()
+					continue 
+				}
+			}
+			if len(s.filterLines) > 0 {
+				if _, ok := s.filterLines[0]; ok { // Lines=0
+					resp.Body.Close()
+					continue 
+				}
+			}
+
 			// FFUF-style verbose output
 			if s.cfg.Verbose {
 				// Format: filename [Status: CODE, Size: SIZE, Words: 0, Lines: 0]   URL

@@ -1,0 +1,14 @@
+# Binaries
+*.exe
+*.dll
+s3bypass
+
+# Test files
+test_wordlist.txt
+found_secrets.txt
+protec_list.txt
+output.txt
+
+# IDEs
+.vscode/
+.idea/

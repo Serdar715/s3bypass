@@ -17,6 +17,12 @@ type Scanner struct {
 	client  *http.Client
 	buckets []string
 	payloads []string
+	
+	// Filters
+	filterCodes map[int]struct{}
+	filterSizes map[int]struct{}
+	filterWords map[int]struct{}
+	filterLines map[int]struct{}
 }
 
 // New creates a new Scanner instance
@@ -48,11 +54,21 @@ func New(cfg *config.Config, buckets []string) *Scanner {
 		scanPayloads = Payloads
 	}
 
+	// Parse Filters
+	fCodes, _ := utils.ParseIntList(cfg.FilterCode)
+	fSizes, _ := utils.ParseIntList(cfg.FilterSize)
+	fWords, _ := utils.ParseIntList(cfg.FilterWord)
+	fLines, _ := utils.ParseIntList(cfg.FilterLine)
+
 	return &Scanner{
 		cfg:      cfg,
 		client:   client,
 		buckets:  buckets,
 		payloads: scanPayloads,
+		filterCodes: fCodes,
+		filterSizes: fSizes,
+		filterWords: fWords,
+		filterLines: fLines,
 	}
 }
 

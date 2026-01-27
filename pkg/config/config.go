@@ -16,6 +16,10 @@ type Config struct {
 	Delay       int
 	Verbose     bool
 	Wordlist    string
+	FilterCode  string
+	FilterSize  string
+	FilterWord  string
+	FilterLine  string
 }
 
 // Load parses CLI flags and returns a Config struct
@@ -28,6 +32,10 @@ func Load() (*Config, error) {
 	delay := flag.Int("delay", DefaultDelayMs, "Delay between requests in milliseconds")
 	verbose := flag.Bool("v", false, "Enable verbose logging (debug mode)")
 	wordlist := flag.String("w", "", "Path to custom wordlist file (optional)")
+	fc := flag.String("fc", "", "Filter HTTP status codes (e.g. 404,403)")
+	fs := flag.String("fs", "", "Filter HTTP response sizes (e.g. 0,1024)")
+	fw := flag.String("fw", "", "Filter by amount of words (e.g. 0)")
+	fl := flag.String("fl", "", "Filter by amount of lines (e.g. 0)")
 
 	flag.Parse()
 
@@ -40,6 +48,10 @@ func Load() (*Config, error) {
 		Delay:       *delay,
 		Verbose:     *verbose,
 		Wordlist:    *wordlist,
+		FilterCode:  *fc,
+		FilterSize:  *fs,
+		FilterWord:  *fw,
+		FilterLine:  *fl,
 	}
 
 	if err := cfg.validate(); err != nil {
