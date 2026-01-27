@@ -38,31 +38,31 @@ sudo mv s3bypass /usr/local/bin/
 Scan a list of buckets from a text file. The tool automatically cleans prefixes.
 
 ```bash
-./s3bypass -l targets.txt
+s3bypass -l targets.txt
 ```
 
 ### Single Target Scan
 Quickly check a single bucket.
 
 ```bash
-./s3bypass -u http://target-bucket.s3.amazonaws.com/
+s3bypass -u http://target-bucket.s3.amazonaws.com/
 ```
 
 ### WAF Evasion Mode
 Scan with 500ms delay (plus random jitter) to avoid rate limits.
 
 ```bash
-./s3bypass -l targets.txt -delay 500 -t 20
+s3bypass -l targets.txt -delay 500 -t 20
 ```
 
 ### Advanced Options
 
 ```bash
 # Scan with 200 threads and save to custom output
-./s3bypass -l targets.txt -t 200 -o secrets_found.txt
+s3bypass -l targets.txt -t 200 -o secrets_found.txt
 
 # Help menu
-./s3bypass -h
+s3bypass -h
 ```
 
 ## 📋 Input Formats
