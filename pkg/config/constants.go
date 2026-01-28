@@ -17,7 +17,11 @@ const (
 	UserAgent             = "S3Hunter/2.0"
 	S3UrlRegex            = `http[s]?://([a-zA-Z0-9.-]+)\.s3\.amazonaws\.com`
 	
+	// HTTP Status Codes
+	SuccessStatusCode = 200
+	
 	// WAF Evasion Constants
 	JitterPercentage = 0.1
 	JitterMultiplier = 2
+	JitterBaseOffset = 1
 )

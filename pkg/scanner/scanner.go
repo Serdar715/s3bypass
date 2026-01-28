@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 	"s3bypass/pkg/config"
+	"s3bypass/pkg/filter"
+	"s3bypass/pkg/limiter"
 	"s3bypass/pkg/utils"
 	"sync"
 	"time"
@@ -18,11 +20,8 @@ type Scanner struct {
 	buckets []string
 	payloads []string
 	
-	// Filters
-	filterCodes map[int]struct{}
-	filterSizes map[int]struct{}
-	filterWords map[int]struct{}
-	filterLines map[int]struct{}
+	filter  *filter.Engine
+	limiter *limiter.RateLimiter
 }
 
 // New creates a new Scanner instance
@@ -40,7 +39,8 @@ func New(cfg *config.Config, buckets []string) *Scanner {
 		Timeout:   time.Duration(cfg.Timeout) * time.Second,
 	}
 
-	// Load payloads
+	// Load payloads (logic remains same, just simplified call if possible, but keeping inline for now is fine or move to utils)
+	// Keeping payload logic inline for this step to focus on structure
 	var scanPayloads []string
 	if cfg.Wordlist != "" {
 		lines, err := utils.ReadLines(cfg.Wordlist)
@@ -54,21 +54,13 @@ func New(cfg *config.Config, buckets []string) *Scanner {
 		scanPayloads = Payloads
 	}
 
-	// Parse Filters
-	fCodes, _ := utils.ParseIntList(cfg.FilterCode)
-	fSizes, _ := utils.ParseIntList(cfg.FilterSize)
-	fWords, _ := utils.ParseIntList(cfg.FilterWord)
-	fLines, _ := utils.ParseIntList(cfg.FilterLine)
-
 	return &Scanner{
 		cfg:      cfg,
 		client:   client,
 		buckets:  buckets,
 		payloads: scanPayloads,
-		filterCodes: fCodes,
-		filterSizes: fSizes,
-		filterWords: fWords,
-		filterLines: fLines,
+		filter:   filter.New(cfg),
+		limiter:  limiter.New(cfg.Delay),
 	}
 }
 
