@@ -71,10 +71,10 @@ var Prefixes = []string{
 	"exports/", "db_dumps/", "financial/", "private/", "ssl/", "keys/", "users/", "customers/", "secure/", "archive/", "logs/",
 	// Media & Static Files
 	"assets/", "uploads/", "media/", "images/", "static/", "cdn/", "files/", "documents/", "attachments/", "downloads/",
-	"photos/", "videos/", "audio/", "fonts/", "icons/",
+	"photos/",
 	// Development & DevOps
 	"dev/", "development/", "prod/", "production/", "release/", "releases/", "ci/", "cicd/", "pipeline/", "artifacts/",
-	"packages/", "dist/", "build/", "output/", "target/",
+	"packages/", "dist/", "build/", "output/",
 	// Data & Analytics
 	"data/", "raw/", "processed/", "analytics/", "reports/", "etl/", "warehouse/", "lake/", "datalake/",
 	"metrics/", "stats/", "insights/",
