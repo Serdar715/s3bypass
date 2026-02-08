@@ -3,10 +3,8 @@ package scanner
 import (
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"s3bypass/pkg/config"
-	"s3bypass/pkg/utils"
 )
 
 // Job represents a single scan task
@@ -22,47 +20,74 @@ type Result struct {
 	Size int64
 }
 
-// worker processes jobs from the channel
+// worker processes jobs from the channel using RequestStrategy
 func (scan *Scanner) worker(jobs <-chan Job, results chan<- Result) {
 	for job := range jobs {
 		scan.limiter.Wait()
 
 		url := fmt.Sprintf("https://%s.s3.amazonaws.com/%s%s", job.Bucket, job.Prefix, job.Payload)
-		req, err := http.NewRequest("HEAD", url, nil)
-		if err != nil {
-			slog.Error("Failed to create request", "url", url, "error", err)
-			continue
-		}
 		
-		req.Header.Set("User-Agent", utils.GetRandomUserAgent())
-
-		resp, err := scan.client.Do(req)
+		// RequestStrategy kullanarak request yap
+		respData, err := scan.strategy.Execute(scan.client, url)
 		if err != nil {
 			slog.Debug("Request failed", "url", url, "error", err)
 			continue
 		}
 
-		// Filter Check
-		if scan.filter.ShouldSkip(resp) {
-			resp.Body.Close()
+		// Filter Check - ResponseData üzerinden
+		if scan.shouldSkipResponse(respData) {
 			continue
 		}
 
-		// Logging
+		// Verbose logging
 		if scan.cfg.Verbose {
-			fmt.Fprintf(os.Stderr, "%s [Status: %d, Size: %d, Words: 0, Lines: 0]   %s\n", 
-				job.Payload, resp.StatusCode, resp.ContentLength, url)
+			fmt.Fprintf(os.Stderr, "%s [Status: %d, Size: %d, Words: %d, Lines: %d]   %s\n", 
+				job.Payload, respData.StatusCode, respData.ContentLength, 
+				respData.WordCount, respData.LineCount, url)
 		}
 
-		if resp.StatusCode == config.SuccessStatusCode {
+		if respData.StatusCode == config.SuccessStatusCode {
 			results <- Result{
 				URL:  url,
-				Size: resp.ContentLength,
+				Size: respData.ContentLength,
 			}
 		}
-		resp.Body.Close()
 	}
 }
+
+// shouldSkipResponse ResponseData üzerinden filtreleme yapar
+func (scan *Scanner) shouldSkipResponse(resp *ResponseData) bool {
+	// Filter by Status Code
+	if len(scan.filter.Codes) > 0 {
+		if _, ok := scan.filter.Codes[resp.StatusCode]; ok {
+			return true
+		}
+	}
+
+	// Filter by Content Size
+	if len(scan.filter.Sizes) > 0 {
+		if _, ok := scan.filter.Sizes[int(resp.ContentLength)]; ok {
+			return true
+		}
+	}
+
+	// Filter by Words
+	if len(scan.filter.Words) > 0 {
+		if _, ok := scan.filter.Words[resp.WordCount]; ok {
+			return true
+		}
+	}
+	
+	// Filter by Lines
+	if len(scan.filter.Lines) > 0 {
+		if _, ok := scan.filter.Lines[resp.LineCount]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Global lists moved here to avoid clutter in main
 var Prefixes = []string{
 	// Core & Legacy

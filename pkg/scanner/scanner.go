@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"os"
 	"s3bypass/pkg/config"
 	"s3bypass/pkg/filter"
 	"s3bypass/pkg/limiter"
@@ -15,13 +14,14 @@ import (
 
 // Scanner handles the scanning operations
 type Scanner struct {
-	cfg     *config.Config
-	client  *http.Client
-	buckets []string
+	cfg      *config.Config
+	client   *http.Client
+	buckets  []string
 	payloads []string
 	
-	filter  *filter.Engine
-	limiter *limiter.RateLimiter
+	filter   *filter.Engine
+	limiter  *limiter.RateLimiter
+	strategy RequestStrategy
 }
 
 // New creates a new Scanner instance
@@ -39,8 +39,7 @@ func New(cfg *config.Config, buckets []string) *Scanner {
 		Timeout:   time.Duration(cfg.Timeout) * time.Second,
 	}
 
-	// Load payloads (logic remains same, just simplified call if possible, but keeping inline for now is fine or move to utils)
-	// Keeping payload logic inline for this step to focus on structure
+	// Load payloads
 	var scanPayloads []string
 	if cfg.Wordlist != "" {
 		lines, err := utils.ReadLines(cfg.Wordlist)
@@ -61,12 +60,13 @@ func New(cfg *config.Config, buckets []string) *Scanner {
 		payloads: scanPayloads,
 		filter:   filter.New(cfg),
 		limiter:  limiter.New(cfg.Delay),
+		strategy: CreateRequestStrategy(cfg.FullCheck),
 	}
 }
 
 // Start initiates the scanning process using a worker pool
 func (s *Scanner) Start() {
-	jobs := make(chan Job, s.cfg.ThreadCount*config.ChannelBufferMulti) // buffer for jobs
+	jobs := make(chan Job, s.cfg.ThreadCount*config.ChannelBufferMulti)
 	results := make(chan Result, s.cfg.ThreadCount*config.ChannelBufferMulti)
 
 	var wg sync.WaitGroup
@@ -80,8 +80,9 @@ func (s *Scanner) Start() {
 		}()
 	}
 
-	// Result handler
-	go s.handleResults(results)
+	// Result handler - yeni yapı ile
+	resultHandler := NewResultHandler(s.cfg.OutputFile)
+	resultHandler.Start(results)
 
 	// Job generator
 	s.generateJobs(jobs)
@@ -89,6 +90,9 @@ func (s *Scanner) Start() {
 
 	wg.Wait()
 	close(results)
+	
+	// ResultHandler'ın tüm sonuçları yazmasını bekle
+	resultHandler.Wait()
 }
 
 func (s *Scanner) generateJobs(jobs chan<- Job) {
@@ -102,21 +106,5 @@ func (s *Scanner) generateJobs(jobs chan<- Job) {
 				}
 			}
 		}
-	}
-}
-
-func (s *Scanner) handleResults(results <-chan Result) {
-	outputFile, err := os.Create(s.cfg.OutputFile)
-	if err != nil {
-		fmt.Printf("❌ Failed to create output file: %v\n", err)
-		return
-	}
-	defer outputFile.Close()
-	outputFile.WriteString("--- S3 SCAN RESULTS ---\n")
-
-	for result := range results {
-		msg := fmt.Sprintf("✅ [FOUND] %s (Size: %d)", result.URL, result.Size)
-		fmt.Println(msg)
-		outputFile.WriteString(msg + "\n")
 	}
 }

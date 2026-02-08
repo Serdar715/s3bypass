@@ -20,6 +20,7 @@ type Config struct {
 	FilterSize  string
 	FilterWord  string
 	FilterLine  string
+	FullCheck   bool // GET request ile word/line sayımı yapar
 }
 
 // Load parses CLI flags and returns a Config struct
@@ -36,6 +37,7 @@ func Load() (*Config, error) {
 	fs := flag.String("fs", "", "Filter HTTP response sizes (e.g. 0,1024)")
 	fw := flag.String("fw", "", "Filter by amount of words (e.g. 0)")
 	fl := flag.String("fl", "", "Filter by amount of lines (e.g. 0)")
+	fullCheck := flag.Bool("full-check", false, "Use GET requests for word/line counting (slower)")
 
 	flag.Parse()
 
@@ -52,6 +54,7 @@ func Load() (*Config, error) {
 		FilterSize:  *fs,
 		FilterWord:  *fw,
 		FilterLine:  *fl,
+		FullCheck:   *fullCheck,
 	}
 
 	if err := cfg.validate(); err != nil {

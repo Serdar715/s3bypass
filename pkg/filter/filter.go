@@ -3,7 +3,6 @@ package filter
 import (
 	"net/http"
 	"s3bypass/pkg/config"
-	"s3bypass/pkg/utils"
 )
 
 // Engine handles filtering of scan results
@@ -14,19 +13,15 @@ type Engine struct {
 	Lines map[int]struct{}
 }
 
-// New creates a new Filter Engine by parsing config
+// New creates a new Filter Engine by parsing config using FilterBuilder
 func New(cfg *config.Config) *Engine {
-	fCodes, _ := utils.ParseIntList(cfg.FilterCode)
-	fSizes, _ := utils.ParseIntList(cfg.FilterSize)
-	fWords, _ := utils.ParseIntList(cfg.FilterWord)
-	fLines, _ := utils.ParseIntList(cfg.FilterLine)
-
-	return &Engine{
-		Codes: fCodes,
-		Sizes: fSizes,
-		Words: fWords,
-		Lines: fLines,
-	}
+	builder := NewFilterBuilder().
+		WithCodes(cfg.FilterCode).
+		WithSizes(cfg.FilterSize).
+		WithWords(cfg.FilterWord).
+		WithLines(cfg.FilterLine)
+	
+	return builder.Build()
 }
 
 // ShouldSkip returns true if the response matches any filter
